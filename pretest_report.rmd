@@ -1,0 +1,93 @@
+---
+title: "Popdemos Pretest"
+output:
+  html_document:
+  df_print: paged
+  
+knit: (function(input_file, encoding) {
+  out_dir <- 'docs';
+  rmarkdown::render(input_file,
+ encoding=encoding,
+ output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
+
+editor_options: 
+  chunk_output_type: console
+---
+# Introduction
+Pretest for POPDEMOS Project that explores the relationship between depictions of fear/anxiety and anger for outgroups, especially right-wing populist groups. 
+
+Analysis run on `r Sys.Date()`. 
+
+# Setup and Data Cleaning 
+
+See code from Alex in popemo_script.R for labeling and recoding. Cannot share data due to privacy concerns. Maybe add a synthetic data set for validation? 
+
+```{r setup}
+  library(Rmisc)   #For summarySE function 
+  library(tidyverse) 
+  library(broom)
+  library(beeswarm)
+
+  load("pretest-prepared.rdata")
+```
+
+# Descriptives 
+
+### Left-Right Self placement
+```{r}
+df %>%
+  mutate(lr=unclass(links_rechts))%>%
+  select(lr)%>%
+  summary(.)
+```
+
+```{r}
+df %>% 
+  mutate(lr=unclass(links_rechts))%>%
+  select(lr)%>%
+  ggplot()+
+    aes(x=lr) + 
+    geom_histogram(aes(y=..density..), colour="black", fill="white", bins=10)+
+    geom_density(alpha=.2, fill="#FF6666") +
+    labs(x="Left-Right Self Placement", y="N")+
+    theme_bw()
+```
+
+Seems roughly normally distributed. Wondering if too many right-wing people in the sample though - since we are looking at outgroups?
+
+  
+
+
+# Treatment Checks
+
+## Basic Treatment Checks
+
+### To what extent do you share the same opinion as the opinion depicted? 
+```{r Share the same opinion}
+  df %>%
+    summarySE(data=., measurevar = "pt_eins_teilen", group= "treatment", na.rm=T)%>%
+    ggplot()+
+      aes(x=treatment,y=pt_eins_teilen,ymin=pt_eins_teilen-ci, ymax=pt_eins_teilen+ci)+
+      geom_col()+
+      geom_errorbar(width=0.4)+
+      theme_bw()+
+      labs(x="Treatment",y="Share opinion")
+```
+
+### To what extent can you understand the opinion depicted? 
+```{r understand the opinion}
+  df %>%
+    summarySE(data=., measurevar = "pt_eins_nachvollziehen", group= "treatment", na.rm=T)%>%
+    ggplot()+
+      aes(x=treatment,y=pt_eins_nachvollziehen,ymin=pt_eins_nachvollziehen-ci, ymax=pt_eins_nachvollziehen+ci)+
+      geom_col()+
+      geom_errorbar(width=0.4)+
+      theme_bw()+
+      labs(x="Treatment",y="Understand opinion")
+```
+
+
+
+
+
+# Prepare Code for Main Analaysis of follow up hypothesis
