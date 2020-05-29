@@ -55,6 +55,17 @@ df %>%
 
 Seems roughly normally distributed. Wondering if too many right-wing people in the sample though - since we are looking at outgroups?
 
+### Sociodemographics
+```{r}
+ df %>%
+  mutate(gender=as_factor(geschlecht),
+         edu=as_factor(schulabschluss))%>%
+  select(gender,haushalteinkommen,edu)%>%
+  summary()
+```
+
+Equal on gender. Coding of Education is a bit coarse / no labels. Also some funny outliers on Income. 
+
   
 
 
@@ -73,6 +84,7 @@ Seems roughly normally distributed. Wondering if too many right-wing people in t
       theme_bw()+
       labs(x="Treatment",y="Share opinion")
 ```
+
 
 ### To what extent can you understand the opinion depicted? 
 ```{r understand the opinion}
