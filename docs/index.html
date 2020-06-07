@@ -369,7 +369,7 @@ summary {
 <div id="introduction" class="section level1">
 <h1>Introduction</h1>
 <p>Pretest for POPDEMOS Project that explores the relationship between depictions of fear/anxiety and anger for outgroups, especially right-wing populist groups.</p>
-<p>Analysis run on 2020-05-29.</p>
+<p>Analysis run on 2020-06-07.</p>
 </div>
 <div id="setup-and-data-cleaning" class="section level1">
 <h1>Setup and Data Cleaning</h1>
@@ -378,12 +378,12 @@ summary {
 <pre><code>## Loading required package: lattice</code></pre>
 <pre><code>## Loading required package: plyr</code></pre>
 <pre class="r"><code>  library(tidyverse) </code></pre>
-<pre><code>## -- Attaching packages -------------------------------------------------------------------------------- tidyverse 1.3.0 --</code></pre>
-<pre><code>## √ ggplot2 3.3.0     √ purrr   0.3.4
-## √ tibble  3.0.1     √ dplyr   0.8.5
-## √ tidyr   1.0.2     √ stringr 1.4.0
+<pre><code>## -- Attaching packages ----------------------------------------------------------------------------- tidyverse 1.3.0 --</code></pre>
+<pre><code>## √ ggplot2 3.3.1     √ purrr   0.3.4
+## √ tibble  3.0.1     √ dplyr   1.0.0
+## √ tidyr   1.1.0     √ stringr 1.4.0
 ## √ readr   1.3.1     √ forcats 0.5.0</code></pre>
-<pre><code>## -- Conflicts ----------------------------------------------------------------------------------- tidyverse_conflicts() --
+<pre><code>## -- Conflicts -------------------------------------------------------------------------------- tidyverse_conflicts() --
 ## x dplyr::arrange()   masks plyr::arrange()
 ## x purrr::compact()   masks plyr::compact()
 ## x dplyr::count()     masks plyr::count()
@@ -397,7 +397,8 @@ summary {
 ## x dplyr::summarize() masks plyr::summarize()</code></pre>
 <pre class="r"><code>  library(broom)
   library(beeswarm)
-
+  library(pwr)
+  library(stringr)
   load(&quot;pretest-prepared.rdata&quot;)</code></pre>
 </div>
 <div id="descriptives" class="section level1">
@@ -474,8 +475,58 @@ summary {
 </div>
 </div>
 </div>
-<div id="prepare-code-for-main-analaysis-of-follow-up-hypothesis" class="section level1">
-<h1>Prepare Code for Main Analaysis of follow up hypothesis</h1>
+<div id="power-analysis" class="section level1">
+<h1>Power Analysis</h1>
+<p>Since we do not have a good expectation from the literature what our effect sizes might be, I am using the effect sizes observed in our pre-test to see if our planned sample size is sufficient to detect a statistically signficiant result. This is technically speaking not quite “proper”, but given no good theoretical grounding, I am using this as an exploratory tool. I am focusing only on the “main” study - that is, too what extent respondents can empathize/understand these fears/angers.</p>
+<p>Let us try and aim for 80 % power</p>
+<p>Alpha level of: 0.05</p>
+<pre class="r"><code> effect_size&lt;-df %&gt;%
+    mutate(emotion=str_split_fixed(treatment, &quot; - &quot;,n=2)[,1],
+           reason=str_split_fixed(treatment, &quot; - &quot;,n=2)[,2])%&gt;%
+    select(emotion,reason,pt_eins_nachvollziehen)%&gt;%
+    group_by(emotion,reason)%&gt;%
+    summarize(mean=mean(pt_eins_nachvollziehen,na.rm=T),
+              sd=sd(pt_eins_nachvollziehen,na.rm=T))%&gt;%
+    pivot_wider(names_from=emotion, values_from=c(mean,sd))%&gt;%
+    mutate(effect=mean_Angst-mean_Wut,
+           sd=mean(sd_Angst+sd_Wut)/2)%&gt;%
+    mutate(effect.std=effect/sd)</code></pre>
+<pre><code>## `summarise()` regrouping output by &#39;emotion&#39; (override with `.groups` argument)</code></pre>
+<pre class="r"><code>  effect_size</code></pre>
+<pre><code>## # A tibble: 2 x 8
+##   reason      mean_Angst mean_Wut sd_Angst sd_Wut effect    sd effect.std
+##   &lt;chr&gt;            &lt;dbl&gt;    &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;  &lt;dbl&gt; &lt;dbl&gt;      &lt;dbl&gt;
+## 1 Eliten            4.02     3.77     2.16   2.24  0.25   2.09      0.120
+## 2 Zuwanderung       4.59     3.84     2.01   1.95  0.755  2.09      0.361</code></pre>
+<p>With standardized effect sizes of <code>0.1197148</code> for elites and <code>0.3613602</code> immigration respectively, we are roughly moving in the small / medium effect size category.</p>
+<div id="correlation-power-test" class="section level2">
+<h2>Correlation power test</h2>
+<pre class="r"><code>pwr.r.test(
+  r = effect_size$effect.std[2],
+  sig.level = 0.05,
+  power = 0.8)</code></pre>
+<pre><code>## 
+##      approximate correlation power calculation (arctangh transformation) 
+## 
+##               n = 56.96953
+##               r = 0.3613602
+##       sig.level = 0.05
+##           power = 0.8
+##     alternative = two.sided</code></pre>
+<pre class="r"><code>pwr.r.test(
+  r = effect_size$effect.std[1],
+  sig.level = 0.05,
+  power = 0.8)</code></pre>
+<pre><code>## 
+##      approximate correlation power calculation (arctangh transformation) 
+## 
+##               n = 544.5257
+##               r = 0.1197148
+##       sig.level = 0.05
+##           power = 0.8
+##     alternative = two.sided</code></pre>
+<p>The sample sizes for elite effects are much larger than for immigration effects. I am also weary now about merging the two treatments. This also does not take into account the need for potential post treatment adjustment, such as controlling for relative proximity prior to treatment , based for example on left-right self treatment.</p>
+</div>
 </div>
 
 

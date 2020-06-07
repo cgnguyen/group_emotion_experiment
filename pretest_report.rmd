@@ -27,7 +27,8 @@ See code from Alex in popemo_script.R for labeling and recoding. Cannot share da
   library(tidyverse) 
   library(broom)
   library(beeswarm)
-
+  library(pwr)
+  library(stringr)
   load("pretest-prepared.rdata")
 ```
 
@@ -102,4 +103,50 @@ Equal on gender. Coding of Education is a bit coarse / no labels. Also some funn
 
 
 
-# Prepare Code for Main Analaysis of follow up hypothesis
+# Power Analysis
+
+Since we do not have a good expectation from the literature what our effect sizes might be, I am using the effect sizes observed in our pre-test to see if our planned sample size is sufficient to detect a statistically signficiant result. This is technically speaking not quite "proper", but given no good theoretical grounding, I am using this as an exploratory tool. I am focusing only on the "main" study - that is, too what extent respondents can empathize/understand these fears/angers. 
+
+Let us try and aim for 80 % power
+
+Alpha level of: 0.05
+
+```{r effect size estimate and standardization}
+ effect_size<-df %>%
+    mutate(emotion=str_split_fixed(treatment, " - ",n=2)[,1],
+           reason=str_split_fixed(treatment, " - ",n=2)[,2])%>%
+    select(emotion,reason,pt_eins_nachvollziehen)%>%
+    group_by(emotion,reason)%>%
+    summarize(mean=mean(pt_eins_nachvollziehen,na.rm=T),
+              sd=sd(pt_eins_nachvollziehen,na.rm=T))%>%
+    pivot_wider(names_from=emotion, values_from=c(mean,sd))%>%
+    mutate(effect=mean_Angst-mean_Wut,
+           sd=mean(sd_Angst+sd_Wut)/2)%>%
+    mutate(effect.std=effect/sd)
+
+  effect_size
+```
+
+With standardized effect sizes of ``r effect_size$effect.std[1]`` for elites and ``r effect_size$effect.std[2]`` immigration respectively, we are roughly moving in the small / medium effect size category. 
+
+## Correlation power test
+```{r immigration }
+
+pwr.r.test(
+  r = effect_size$effect.std[2],
+  sig.level = 0.05,
+  power = 0.8)
+```
+
+```{r elites}
+
+pwr.r.test(
+  r = effect_size$effect.std[1],
+  sig.level = 0.05,
+  power = 0.8)
+```
+
+The sample sizes for elite effects are much larger than for immigration effects. I am also weary now about merging the two treatments. This also does not take into account the need for potential post treatment adjustment, such as controlling for relative proximity prior to treatment , based for example on left-right self treatment. 
+
+
+
