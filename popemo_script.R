@@ -1,14 +1,16 @@
 # Script: PopEmo
-# Last updated: 26/05/2020
+# Last updated: 10/12/2020
 
-install.packages("pillar", "expss", "haven", "tidyverse")
+#install.packages(c("pillar", "haven", "expss", "tidyverse", "corrr", "psych"))
 library(pillar)
 library(haven)
 library(expss)
 library(tidyverse)
+library(corrr)
+library(psych)
 
-df <- read_sav("Desktop/Data/data_project_800804_2020_05_19(1).sav")
 
+df <- read_sav("data_project_800804_2020_05_19(1).sav")
 
 df<-df[(df$dispcode == 31 & 32),]
 
@@ -51,7 +53,7 @@ df <- df %>% rename(treatment = c_0001,
                     eel_act_eigene_emotionen_wut = v_56,
                     eel_act_eigene_emotionen_ekel = v_57,
                     eel_act_eigene_emotionen_scham = v_58,
-                    eel_act_eigene_emotionen_verachtung = v_59, 
+                    eel_act_eigene_emotionen_verachtung = v_59,
                     eel_act_eigene_emotionen_stolz = v_60,
                     eel_act_eigene_emotionen_freude = v_61,
                     eel_act_eigene_emotionen_hoffnung = v_62,
@@ -61,13 +63,13 @@ df <- df %>% rename(treatment = c_0001,
                     eel_act_act_langsam = v_66,
                     scm_sympatisch = v_40,
                     scm_warmherzig = v_41,
-                    scm_gutmütig = v_42,
-                    bt_kontakt_häufigkeit = v_69,
+                    scm_gutmuetig = v_42,
+                    bt_kontakt_haeufigkeit = v_69,
                     bt_kontakt_angenehm = v_70,
                     bt_approach_konfrontieren = v_43,
                     bt_approach_entgegenstellen = v_44,
                     bt_approach_avoidance = v_45,
-                    bt_avoidance_meiden = v_46, 
+                    bt_avoidance_meiden = v_46,
                     bt_avoidance_zu_tun_haben = v_47,
                     bt_avoidance_abstand_halten = v_48,
                     haushalteinkommen = v_10,
@@ -79,7 +81,7 @@ df <- df %>% rename(treatment = c_0001,
 
 
 # "weiss ich nicht" oder "sonstige" als NA
-df$sonntagsfrage[df$sonntagsfrage == 8] <- NA 
+df$sonntagsfrage[df$sonntagsfrage == 8] <- NA
 df$sonntagsfrage_muss[df$sonntagsfrage_muss == 7] <- NA
 
 df$pt_eins_teilen[df$pt_eins_teilen == 8] <- NA
@@ -88,27 +90,27 @@ df$pt_angst_nachvollziehen[df$pt_angst_nachvollziehen == 8] <- NA
 df$pt_wut_teilen[df$pt_wut_teilen == 8] <- NA
 df$pt_wut_nachvollziehen[df$pt_wut_nachvollziehen == 8] <- NA
 
-df$ot_ci_vertrauen[df$ot_ci_vertrauen == 8] <- NA 
-df$ot_ci_ausnutzen[df$ot_ci_ausnutzen == 8] <- NA 
-df$ot_ci_tun_was_sie_sagen[df$ot_ci_tun_was_sie_sagen == 8] <- NA 
-df$ot_ci_gut_zurecht_kommen[df$ot_ci_gut_zurecht_kommen == 8] <- NA 
-df$ot_ci_zusammenarbeiten[df$ot_ci_zusammenarbeiten == 8] <- NA 
+df$ot_ci_vertrauen[df$ot_ci_vertrauen == 8] <- NA
+df$ot_ci_ausnutzen[df$ot_ci_ausnutzen == 8] <- NA
+df$ot_ci_tun_was_sie_sagen[df$ot_ci_tun_was_sie_sagen == 8] <- NA
+df$ot_ci_gut_zurecht_kommen[df$ot_ci_gut_zurecht_kommen == 8] <- NA
+df$ot_ci_zusammenarbeiten[df$ot_ci_zusammenarbeiten == 8] <- NA
 
-df$eel_act_eigene_emotionen_angst[df$eel_act_eigene_emotionen_angst == 8] <- NA 
-df$eel_act_eigene_emotionen_wut[df$eel_act_eigene_emotionen_wut == 8] <- NA 
-df$eel_act_eigene_emotionen_ekel[df$eel_act_eigene_emotionen_ekel == 8] <- NA 
-df$eel_act_eigene_emotionen_scham[df$eel_act_eigene_emotionen_scham == 8] <- NA 
-df$eel_act_eigene_emotionen_verachtung[df$eel_act_eigene_emotionen_verachtung == 8] <- NA 
-df$eel_act_eigene_emotionen_stolz[df$eel_act_eigene_emotionen_stolz == 8] <- NA 
-df$eel_act_eigene_emotionen_freude[df$eel_act_eigene_emotionen_freude == 8] <- NA 
-df$eel_act_eigene_emotionen_hoffnung[df$eel_act_eigene_emotionen_hoffnung == 8] <- NA 
-df$eel_act_eigene_emotionen_trauer[df$eel_act_eigene_emotionen_trauer == 8] <- NA 
+df$eel_act_eigene_emotionen_angst[df$eel_act_eigene_emotionen_angst == 8] <- NA
+df$eel_act_eigene_emotionen_wut[df$eel_act_eigene_emotionen_wut == 8] <- NA
+df$eel_act_eigene_emotionen_ekel[df$eel_act_eigene_emotionen_ekel == 8] <- NA
+df$eel_act_eigene_emotionen_scham[df$eel_act_eigene_emotionen_scham == 8] <- NA
+df$eel_act_eigene_emotionen_verachtung[df$eel_act_eigene_emotionen_verachtung == 8] <- NA
+df$eel_act_eigene_emotionen_stolz[df$eel_act_eigene_emotionen_stolz == 8] <- NA
+df$eel_act_eigene_emotionen_freude[df$eel_act_eigene_emotionen_freude == 8] <- NA
+df$eel_act_eigene_emotionen_hoffnung[df$eel_act_eigene_emotionen_hoffnung == 8] <- NA
+df$eel_act_eigene_emotionen_trauer[df$eel_act_eigene_emotionen_trauer == 8] <- NA
 
-df$scm_sympatisch[df$scm_sympatisch == 8] <- NA 
-df$scm_warmherzig[df$scm_warmherzig == 8] <- NA 
-df$scm_gutmütig[df$scm_gutmütig == 8] <- NA 
+df$scm_sympatisch[df$scm_sympatisch == 8] <- NA
+df$scm_warmherzig[df$scm_warmherzig == 8] <- NA
+df$scm_gutmuetig[df$scm_gutmuetig == 8] <- NA
 
-df$bt_kontakt_häufigkeit[df$bt_kontakt_häufigkeit == 8] <- NA
+df$bt_kontakt_haeufigkeit[df$bt_kontakt_haeufigkeit == 8] <- NA
 df$bt_kontakt_angenehm[df$bt_kontakt_angenehm == 8] <- NA
 df$bt_approach_konfrontieren[df$bt_approach_konfrontieren == 8] <- NA
 df$bt_approach_entgegenstellen[df$bt_approach_entgegenstellen == 8] <- NA
@@ -119,46 +121,101 @@ df$bt_avoidance_abstand_halten[df$bt_avoidance_abstand_halten == 8] <- NA
 
 
 #Factor variables
-df = apply_labels(df, 
+
+## treatment
+df = apply_labels(df,
                   treatment = c("Angst - Zuwanderung" = 1,
                                 "Wut - Zuwanderung" = 2,
                                 "Angst - Eliten" = 3,
                                 "Wut - Eliten" = 4))
 df$treatment <- as.factor(df$treatment)
 
+# Generate emotion and topic variable (separate treatment vars.)
 
-df = apply_labels(df, 
+df$emotion<-NA
+df$thema<-NA
+levels(df$treatment)
+
+df$emotion[df$treatment=="Wut - Zuwanderung" | df$treatment=="Wut - Eliten" ] <- "wut"
+df$emotion[df$treatment=="Angst - Zuwanderung" | df$treatment=="Angst - Eliten"] <- "angst"
+df$emotion
+
+df$thema[df$treatment=="Wut - Zuwanderung" | df$treatment=="Angst - Zuwanderung" ] <- "migration"
+df$thema[df$treatment=="Wut - Eliten" | df$treatment=="Angst - Eliten"] <- "eliten"
+df$thema
+
+
+df = apply_labels(df,
                   ausbildung = c("Beruflich" = 1,
-                                "Teilfacharbeiterabschluß" = 2,
+                                "Teilfacharbeiterabschluss" = 2,
                                 "Gewerbliche oder landwirtschaftliche Lehre" = 3,
-                                "Kaufmännische Lehre" = 4,
-                                "Fachschulabschluß" = 5,
-                                "Berufsfachschulabschluß" = 6,
-                                "Meister-, Techniker- oder gleichwertiger Abschluß" = 7,
-                                "Fachhochschulabschluß" = 8,
-                                "Hochschulabschluß" = 9))
+                                "Kaufmaennische Lehre" = 4,
+                                "Fachschulabschluss" = 5,
+                                "Berufsfachschulabschluss" = 6,
+                                "Meister-, Techniker- oder gleichwertiger Abschluss" = 7,
+                                "Fachhochschulabschluss" = 8,
+                                "Hochschulabschluss" = 9))
 df$ausbildung <- as.factor(df$ausbildung)
 
-
-df = apply_labels(df, 
-                  ausbildung = c("Schule beendet ohne Abschluss" = 1,
-                                 "Volks-/ Hauptschulabschluß bzw. POS 8.oder 9. Klasse" = 2,
-                                 "Mittlere Reife, Realschulabschluß bzw. POS 10. Klasse" = 3,
+df = apply_labels(df,
+                  schulabschluss = c("Schule beendet ohne Abschluss" = 1,
+                                 "Volks-/ Hauptschulabschluss bzw. POS 8.oder 9. Klasse" = 2,
+                                 "Mittlere Reife, Realschulabschluss bzw. POS 10. Klasse" = 3,
                                  "Fachhochschulreife" = 4,
                                  "Abitur" = 5,
-                                 "Berufsfachschulabschluß" = 6,
-                                 "Bin Schüler, habe noch keinen Schulabschluß" = 7))
+                                 "Berufsfachschulabschluss" = 6,
+                                 "Bin Schueler, habe noch keinen Schulabschluss" = 7))
 df$schulabschluss <- as.factor(df$schulabschluss)
 
-df$sonntagsfrage
-
-df = apply_labels(df, 
+df = apply_labels(df,
                   sonntagsfrage = c("SPD" = 1,
                                  "AFD" = 2,
                                  "CDU/CSU" = 3,
-                                 "Grüne" = 4,
+                                 "Gruene" = 4,
                                  "Linke" = 5,
                                  "FDP" = 6,
-                                 "Ich wähle nicht" = 7))
+                                 "Ich waehle nicht" = 7))
 df$sonntagsfrage <- as.factor(df$sonntagsfrage)
+df
 
+
+### SCORING
+
+
+library(psych)
+library(tidyverse)
+
+# assign scale items to “keys”
+keys<-list(warmth= c("scm_sympatisch", "scm_warmherzig", "scm_gutmuetig"),
+           approach= c("bt_approach_konfrontieren", "bt_approach_entgegenstellen", "bt_approach_avoidance"),
+           avoidance= c("bt_avoidance_meiden", "-bt_avoidance_zu_tun_haben", "bt_avoidance_abstand_halten"),
+           trust= c("ot_ci_vertrauen", "ot_ci_ausnutzen", "ot_ci_tun_was_sie_sagen"),
+           cooperativeIntent= c("ot_ci_gut_zurecht_kommen", "ot_ci_zusammenarbeiten")
+           )
+
+# Create scores
+my.scales <- scoreItems(keys, df, missing=T, impute="none", min=1, max=7)
+
+# information on scales # get stats about the scales (alpha, missings, etc.)
+print(my.scales,short=F)
+
+describe(my.scales$scores)
+my.scales$scores # scales are NaN in case there have been only missings in a scale
+
+#If we want to delete scales scores for people who did not answer some items for one
+#(or more) scales, we can do the following:
+my.scales$scores[my.scales$missing > 0] <- NaN #get rid of cases with missing data
+
+# extract the actual scores
+my.scores <- as.data.frame(my.scales$scores)
+summary(my.scores)
+
+# look into data:
+head(my.scores, n=20)
+
+# add scores to df
+df <- cbind(df, my.scores)
+head(df)
+
+# save as prepared data-set
+save(df, file="pretest-prepared.rdata")
