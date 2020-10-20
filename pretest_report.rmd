@@ -1,35 +1,38 @@
 ---
 title: "Popdemos Pretest"
 output:
-  
+
   html_document:
   df_print: paged
 knit: (function(input_file, encoding) {
   out_dir <- 'docs';
   rmarkdown::render(input_file,
-editor_options: 
+editor_options:
   chunk_output_type: console
 ---
 # Introduction
-Pretest for POPDEMOS Project that explores the relationship between depictions of fear/anxiety and anger for outgroups, especially right-wing populist groups. 
+Pretest for POPDEMOS Project that explores the relationship between depictions of fear/anxiety and anger for outgroups, especially right-wing populist groups.
 
-Analysis run on `r Sys.Date()`. 
+Analysis run on `r Sys.Date()`.
 
-# Setup and Data Cleaning 
+# Setup and Data Cleaning
 
-See code from Alex in popemo_script.R for labeling and recoding. Cannot share data due to privacy concerns. Maybe add a synthetic data set for validation? 
+See code from Alex in popemo_script.R for labeling, recoding and scoring. Cannot share data due to privacy concerns. Maybe add a synthetic data set for validation?
 
 ```{r setup, warnings=F}
-  library(Rmisc)   #For summarySE function 
-  library(tidyverse) 
+  #install.packages(c("Rmisc", "tidyverse", "broom", "beeswarm", "pwr", "stringr"))
+  library(Rmisc)   #For summarySE function
   library(broom)
   library(beeswarm)
   library(pwr)
   library(stringr)
+  library(tidyverse)
+  setwd("/Users/pwunderlich/Documents/00-FU/POPEMO/DATA")
   load("pretest-prepared.rdata")
+  colnames(df)
 ```
 
-# Descriptives 
+# Descriptives
 
 ### Left-Right Self placement
 ```{r}
@@ -40,11 +43,11 @@ df %>%
 ```
 
 ```{r}
-df %>% 
+df %>%
   mutate(lr=unclass(links_rechts))%>%
   select(lr)%>%
   ggplot()+
-    aes(x=lr) + 
+    aes(x=lr) +
     geom_histogram(aes(y=..density..), colour="black", fill="white", bins=10)+
     geom_density(alpha=.2, fill="#FF6666") +
     labs(x="Left-Right Self Placement", y="N")+
@@ -62,16 +65,16 @@ Seems roughly normally distributed. Wondering if too many right-wing people in t
   summary()
 ```
 
-Equal on gender. Coding of Education is a bit coarse / no labels. Also some funny outliers on Income. 
+Equal on gender. Coding of Education is a bit coarse / no labels. Also some funny outliers on Income.
 
-  
+
 
 
 # Treatment Checks
 
 ## Basic Treatment Checks
 
-### To what extent do you share the same opinion as the opinion depicted? 
+### To what extent do you share the same opinion as the opinion depicted?
 ```{r Share the same opinion}
   df %>%
     summarySE(data=., measurevar = "pt_eins_teilen", group= "treatment", na.rm=T)%>%
@@ -84,7 +87,7 @@ Equal on gender. Coding of Education is a bit coarse / no labels. Also some funn
 ```
 
 
-### To what extent can you understand the opinion depicted? 
+### To what extent can you understand the opinion depicted?
 ```{r understand the opinion}
   df %>%
     summarySE(data=., measurevar = "pt_eins_nachvollziehen", group= "treatment", na.rm=T)%>%
@@ -102,7 +105,7 @@ Equal on gender. Coding of Education is a bit coarse / no labels. Also some funn
 
 # Power Analysis
 
-Since we do not have a good expectation from the literature what our effect sizes might be, I am using the effect sizes observed in our pre-test to see if our planned sample size is sufficient to detect a statistically signficiant result. This is technically speaking not quite "proper", but given no good theoretical grounding, I am using this as an exploratory tool. I am focusing only on the "main" study - that is, too what extent respondents can empathize/understand these fears/angers. 
+Since we do not have a good expectation from the literature what our effect sizes might be, I am using the effect sizes observed in our pre-test to see if our planned sample size is sufficient to detect a statistically signficiant result. This is technically speaking not quite "proper", but given no good theoretical grounding, I am using this as an exploratory tool. I am focusing only on the "main" study - that is, too what extent respondents can empathize/understand these fears/angers.
 
 Let us try and aim for 80 % power
 
@@ -110,13 +113,13 @@ Alpha level of: 0.05
 
 ```{r effect size estimate and standardization}
  effect_size<-df %>%
-    mutate(emotion=str_split_fixed(treatment, " - ",n=2)[,1],
+    mutate(emotion2=str_split_fixed(treatment, " - ",n=2)[,1],
            reason=str_split_fixed(treatment, " - ",n=2)[,2])%>%
-    select(emotion,reason,pt_eins_nachvollziehen)%>%
-    group_by(emotion,reason)%>%
+    select(emotion2,reason,pt_eins_nachvollziehen)%>%
+    group_by(emotion2,reason)%>%
     summarize(mean=mean(pt_eins_nachvollziehen,na.rm=T),
               sd=sd(pt_eins_nachvollziehen,na.rm=T))%>%
-    pivot_wider(names_from=emotion, values_from=c(mean,sd))%>%
+    pivot_wider(names_from=emotion2, values_from=c(mean,sd))%>%
     mutate(effect=mean_Angst-mean_Wut,
            sd=mean(sd_Angst+sd_Wut)/2)%>%
     mutate(effect.std=effect/sd)
@@ -124,7 +127,7 @@ Alpha level of: 0.05
   effect_size
 ```
 
-With standardized effect sizes of ``r effect_size$effect.std[1]`` for elites and ``r effect_size$effect.std[2]`` immigration respectively, we are roughly moving in the small / medium effect size category. 
+With standardized effect sizes of ``r effect_size$effect.std[1]`` for elites and ``r effect_size$effect.std[2]`` immigration respectively, we are roughly moving in the small / medium effect size category.
 
 ## Correlation power test
 ```{r immigration }
@@ -143,7 +146,7 @@ pwr.t.test(
   power = 0.8)
 ```
 
-The sample sizes for elite effects are much larger than for immigration effects. I am also weary now about merging the two treatments. This also does not take into account the need for potential post treatment adjustment, such as controlling for relative proximity prior to treatment , based for example on left-right self treatment. 
+The sample sizes for elite effects are much larger than for immigration effects. I am also weary now about merging the two treatments. This also does not take into account the need for potential post treatment adjustment, such as controlling for relative proximity prior to treatment , based for example on left-right self treatment.
 
 
 ```{r standardized power analysis }
@@ -166,3 +169,55 @@ pwr.anova.test(k = 6, f = 0.1, sig.level = 0.05, power = 0.8)
 
 ```
 
+# Summary stats for all DVs by groups
+
+## Means of DVs by ascribed emotion
+
+```{r}
+
+df %>%
+  group_by(emotion) %>%
+    summarize(., mean_warmth = mean(warmth, na.rm=T),
+            mean_avoidance = mean(avoidance, na.rm=T),
+            mean_approach = mean(approach, na.rm=T),
+            mean_angst = mean(eel_act_eigene_emotionen_angst, na.rm=T),
+            mean_wut = mean(eel_act_eigene_emotionen_wut, na.rm=T),
+            mean_ekel = mean(eel_act_eigene_emotionen_ekel, na.rm=T),
+            mean_scham = mean(eel_act_eigene_emotionen_scham, na.rm=T),
+            mean_verachtung = mean(eel_act_eigene_emotionen_verachtung, na.rm=T),
+            mean_stolz = mean(eel_act_eigene_emotionen_stolz, na.rm=T),
+            mean_freude = mean(eel_act_eigene_emotionen_freude, na.rm=T),
+            mean_hoffnung = mean(eel_act_eigene_emotionen_hoffnung, na.rm=T),
+            mean_trauer = mean(eel_act_eigene_emotionen_trauer, na.rm=T),
+            mean_freude = mean(eel_act_eigene_emotionen_freude, na.rm=T),
+            mean_evaluation = mean(eel_act_act_unangenehm, na.rm=T),
+            mean_potency = mean(eel_act_act_klein, na.rm=T),
+            mean_arousal = mean(eel_act_act_langsam, na.rm=T)
+            )
+
+```
+
+## Means of DVs by topic condition (migration vs elites)
+
+```{r}
+
+df %>%
+  group_by(thema) %>%
+    summarize(mean_warmth = mean(warmth, na.rm=T),
+            mean_avoidance = mean(avoidance, na.rm=T),
+            mean_approach = mean(approach, na.rm=T),
+            mean_angst = mean(eel_act_eigene_emotionen_angst, na.rm=T),
+            mean_wut = mean(eel_act_eigene_emotionen_wut, na.rm=T),
+            mean_ekel = mean(eel_act_eigene_emotionen_ekel, na.rm=T),
+            mean_scham = mean(eel_act_eigene_emotionen_scham, na.rm=T),
+            mean_verachtung = mean(eel_act_eigene_emotionen_verachtung, na.rm=T),
+            mean_stolz = mean(eel_act_eigene_emotionen_stolz, na.rm=T),
+            mean_freude = mean(eel_act_eigene_emotionen_freude, na.rm=T),
+            mean_hoffnung = mean(eel_act_eigene_emotionen_hoffnung, na.rm=T),
+            mean_trauer = mean(eel_act_eigene_emotionen_trauer, na.rm=T),
+            mean_freude = mean(eel_act_eigene_emotionen_freude, na.rm=T),
+            mean_evaluation = mean(eel_act_act_unangenehm, na.rm=T),
+            mean_potency = mean(eel_act_act_klein, na.rm=T),
+            mean_arousal = mean(eel_act_act_langsam, na.rm=T)
+          )
+```
